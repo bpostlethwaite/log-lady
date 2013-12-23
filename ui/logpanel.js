@@ -166,7 +166,6 @@ function LogPanel (root, db, opts) {
     self.stream = liveStream = db.liveStream()
 
     liveStream.on("data", function (data) {
-      console.log(data)
       var key, value
       if ("key" in data)
         key = data.key
