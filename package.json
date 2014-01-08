@@ -5,7 +5,8 @@
     "pm2-interface": "0.0.3",
     "level-live-stream": "~1.4.9",
     "through": "~2.3.4",
-    "multilevel": "~5.5.0"
+    "multilevel": "~5.5.0",
+    "reconnect": "~1.5.2"
   },
   "window": {
     "toolbar": false

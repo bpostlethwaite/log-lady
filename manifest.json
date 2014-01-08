@@ -1,0 +1,88 @@
+{
+    "_prefix": "test",
+    "methods": {
+        "approximateSize": {
+            "type": "async"
+        },
+        "batch": {
+            "type": "async"
+        },
+        "createKeyStream": {
+            "type": "readable"
+        },
+        "createLiveStream": {
+            "type": "readable"
+        },
+        "createReadStream": {
+            "type": "readable"
+        },
+        "createValueStream": {
+            "type": "readable"
+        },
+        "createWriteStream": {
+            "type": "writable"
+        },
+        "del": {
+            "type": "async"
+        },
+        "get": {
+            "type": "async"
+        },
+        "isClosed": {
+            "type": "sync"
+        },
+        "isOpen": {
+            "type": "sync"
+        },
+        "keyStream": {
+            "type": "readable"
+        },
+        "liveStream": {
+            "type": "readable"
+        },
+        "put": {
+            "type": "async"
+        },
+        "readStream": {
+            "type": "readable"
+        },
+        "valueStream": {
+            "type": "readable"
+        },
+        "writeStream": {
+            "type": "writable"
+        }
+    },
+  "sublevels": {
+    "test": {
+      "methods": {
+        "liveStream": {
+            "type": "readable"
+        },
+        "createLiveStream": {
+            "type": "readable"
+        }
+      }
+    },
+    "dev": {
+      "methods": {
+        "liveStream": {
+            "type": "readable"
+        },
+        "createLiveStream": {
+            "type": "readable"
+        }
+      }
+    },
+    "prod":{
+      "methods": {
+        "liveStream": {
+            "type": "readable"
+        },
+        "createLiveStream": {
+            "type": "readable"
+        }
+      }
+    }
+  }
+}

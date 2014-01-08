@@ -1,5 +1,4 @@
 var through = require('through')
-var j2h = require("json-markup")
 
 function LogPanel (root, db, opts) {
 
@@ -41,7 +40,7 @@ function LogPanel (root, db, opts) {
                     +   '<div class="log-header log-service"></div>'
                     +   '<div class="log-header log-ts"></div>'
                     + '</div>'
-                    + '<div class="log-data"></div>'
+                    + '<pre class="log-data"></pre>'
 
 
   /*
@@ -212,7 +211,7 @@ function LogPanel (root, db, opts) {
       eevent.textContent = value.event || "unknown"
       eservice.textContent = value.service || "unknown"
       ets.textContent =  new Date(value.ts).toLocaleString("en-US", {hour12: false})
-      edata.innerHTML = j2h(value.data)
+      edata.innerHTML = JSON.stringify(value.data, undefined, 2)
 
     return log
   }

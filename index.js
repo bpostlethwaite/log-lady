@@ -1,16 +1,28 @@
-/*global LogPanel LogControl */
+/*global LogPanel LogControl require */
 var multilevel = require('multilevel')
-var net = require('net')
-var LiveStream = require('level-live-stream')
-var db = multilevel.client()
-var con = net.connect(9999)
-LiveStream.install(db)
-con.pipe(db.createRpcStream()).pipe(con)
+  , reconnect = require('reconnect')
+  , LiveStream = require('level-live-stream')
+  , manifest = require("./manifest.json")
+  , db = multilevel.client(manifest)
+
+reconnect( function (stream) {
+    var dbstream = db.createRpcStream()
+    stream.pipe(dbstream).pipe(stream)
+
+    dbstream.on("error", function () {
+        stream.destroy()
+    })
+
+    stream.on("error", function () {
+        dbstream.destroy()
+    })
+
+
+}).connect(9999, "ec2-174-129-51-152.compute-1.amazonaws.com")
 
 
 
-
-var gui = require('nw.gui'); //or global.window.nwDispatcher.requireNwGui() (see https://github.com/rogerwang/node-webkit/issues/707)
+var gui = require('nw.gui');
 
 // Get the current window
 var win = gui.Window.get();
@@ -42,24 +54,3 @@ var logpanels = document.querySelectorAll(".log-panel-container")
   , L4 = LogPanel(logpanels[3], db)
          .addFilter("service", "false")
          .connect()
-
-
-//stream.on("data", function (data) {console.log(typeof(data.value))})
-
-// lpanel.addFilter({
-//     "type": function (type) {return type == "process:info"}
-// })
-
-// lpanel.addFilter({
-//     "service": function (service) {return service === "WEBSOCKET"}
-//   , "type": function (type) {return type === "process:error"}
-// })
-
-
-
-//pm1.on('rpc_sock:ready', function () {console.log("ready")})
-
-//PMI.on("data", function (data) {console.log(data)})
-
-
-//require("../lib
