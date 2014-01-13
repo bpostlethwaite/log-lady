@@ -1,7 +1,7 @@
-var through = require('through')
+var fs = require('fs')
 
 function LogPanel (root, db, opts) {
-
+// ^((?!received global count).)*$
 
   if (!opts) opts = {}
 
@@ -19,6 +19,11 @@ function LogPanel (root, db, opts) {
                  +   '<a href="#" class="log-panel-control-filter">filter</a>'
                  +   '<a href="#" class="log-panel-control-replay">replay</a>'
                  +   '<a href="#" class="log-panel-control-clear">clear</a>'
+                 +   '<div class="log-panel-control-widget log-panel-control-replay-last">'
+                 +      '<div class="log-panel-control-text">Replay Last:</div>'
+                 +      '<input type="text" class="log-panel-control-input js-input-replay-time">'
+                 +      '<div class="log-panel-control-text">minutes</div>'
+                 +   '</div>'
                  +   '<div class="log-panel-control-filter"></div>'
                  + '</div>'
                  + '<div class="log-panel">'
@@ -33,12 +38,11 @@ function LogPanel (root, db, opts) {
   var loghtml = document.createElement("div")
   loghtml.className = "log-container"
   loghtml.innerHTML = '<div class="log-header-container">'
-                    +   '<div class="log-header log-pm2name"></div>'
-                    +   '<div class="log-header log-pm_id"></div>'
-                    +   '<div class="log-header log-err"></div>'
-                    +   '<div class="log-header log-event"></div>'
-                    +   '<div class="log-header log-service"></div>'
-                    +   '<div class="log-header log-ts"></div>'
+                    +   '<div class="log-header log-pm2name">pm2name:</div><span></span>'
+                    +   '<div class="log-header log-pm_id">pm_id:</div><span></span>'
+                    +   '<div class="log-header log-service">service:</div><span></span>'
+                    +   '<div class="log-header log-event">event:</div><span></span>'
+                    +   '<div class="log-header log-ts">ts:</div><span></span>'
                     + '</div>'
                     + '<pre class="log-data"></pre>'
 
@@ -50,13 +54,19 @@ function LogPanel (root, db, opts) {
   var filterpop = document.createElement("div")
   filterpop.className = "log-panel-filter-pop"
 
-  filterpop.innerHTML = '<div class="log-panel-control-filter-box">'
+  filterpop.innerHTML = '<div class="active-filter-box">Active filters:</div>'
+                      + '<hr class="filter-line">'
+                      + '<div>Define a new filter:</div>'
+                      + '<div class="log-panel-control-filter-box">'
                       +   '<div class="log-panel-control-text-key item">key:</div>'
                       +   '<input type="text" class="log-panel-control-input js-input-key">'
                       +   '<div class="log-panel-control-text-value item">value:</div>'
                       +   '<input type="text" class="log-panel-control-input js-input-value">'
                       +   '<a href="#" class="log-panel-control-add-filter js-add-filter">add filter</a>'
                       + '</div>'
+                      + '<br>'
+                      + '<div class="pick-filter-box">Pick a saved filter:</div>'
+
 
 
   controlpanel.appendChild(filterpop)
@@ -66,11 +76,14 @@ function LogPanel (root, db, opts) {
   /*
    * Filter Template
    */
+  var savedFilters = ""
   var filterBox = document.createElement('div')
   filterBox.className = "log-panel-control-filter-box"
   filterBox.innerHTML = '<div class="js-filter-key item"></div>'
                       + '<div class="js-filter-value item"></div>'
+                      + '<a href="#" class="js-save-filter">save</a>'
                       + '<a href="#" class="js-clear-filter">clear</a>'
+                      // + renderSavedFilters(savedFilters)
 
 
 
@@ -150,6 +163,11 @@ function LogPanel (root, db, opts) {
 
 
 
+  var inputReplay = controlpanel.querySelector('.js-input-replay-time');
+  inputReplay.value = 5
+
+
+
   /*
    * Connect Stream
    *
@@ -162,7 +180,20 @@ function LogPanel (root, db, opts) {
       self.stream.destroy()
     }
 
-    self.stream = liveStream = db.liveStream()
+    var lastts = Number(controlpanel.querySelector('.js-input-replay-time').value)
+    if (isNaN(lastts))
+      opts = {}
+    else {
+      lastts *= 60 * 1000
+      opts = {min: (Date.now() - lastts) + ""}
+    }
+
+    self.stream = liveStream = db.liveStream(opts)
+
+
+    liveStream.on("error", function () {
+      console.log("some live-stream error")
+    })
 
     liveStream.on("data", function (data) {
       var key, value
@@ -196,22 +227,21 @@ function LogPanel (root, db, opts) {
 
 
     var log = loghtml.cloneNode()
-      , ename = log.querySelector(".log-pm2name")
-      , eid = log.querySelector(".log-pm_id")
-      , eerr = log.querySelector(".log-err")
-      , eevent = log.querySelector(".log-event")
-      , eservice = log.querySelector(".log-service")
-      , ets = log.querySelector(".log-ts")
+      , ename = log.querySelector(".log-pm2name + span")
+      , eid = log.querySelector(".log-pm_id + span")
+      , eservice = log.querySelector(".log-service + span")
+      , eevent = log.querySelector(".log-event + span")
+      , ets = log.querySelector(".log-ts + span")
       , edata = log.querySelector(".log-data")
 
-
-      ename.textContent = value.pm2name || "unknown"
-      eid.textContent = value.pm_id || "unknown"
-      eerr.textContent = value.err || ""
-      eevent.textContent = value.event || "unknown"
-      eservice.textContent = value.service || "unknown"
-      ets.textContent =  new Date(value.ts).toLocaleString("en-US", {hour12: false})
+    ename.textContent = value.pm2name
+    eid.textContent = value.pm_id
+    eevent.textContent = value.event
+    eservice.textContent = value.service
+    ets.textContent = new Date(value.ts).toLocaleString("en-US", {hour12: false})
+    if ("data" in value) {
       edata.innerHTML = JSON.stringify(value.data, undefined, 2)
+    }
 
     return log
   }
@@ -294,13 +324,13 @@ function LogPanel (root, db, opts) {
   function addFilter (key, value) {
 
     var filterElem = filterBox.cloneNode()
-
+    var activeFilters = filterpop.querySelector(".active-filter-box")
     var filter = {}
     filter[key] = value
 
     self.filters.push(filter)
 
-    filterpop.appendChild(filterElem)
+    activeFilters.appendChild(filterElem)
 
     filterElem
     .querySelector(".js-filter-key")
@@ -317,6 +347,12 @@ function LogPanel (root, db, opts) {
     })
 
     return self
+  }
+
+
+
+  function renderSavedFilters (savedFilters) {
+    return '<div></div>'
   }
 
 

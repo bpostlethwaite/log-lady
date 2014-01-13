@@ -52,8 +52,15 @@ html, body {
 .log-header-container {
     display: -webkit-inline-flex;
     font-family: 'Ubuntu Mono', monospace;
-    font-size: medium;
     color: #93a1a1;
+}
+
+.log-header-container > div {
+    font-size: small;
+}
+
+.log-header-container > span {
+    font-size: medium;
 }
 
 .log-header {
@@ -69,7 +76,7 @@ html, body {
 
 .log-panel-control-text {
     position: relative;
-    top: 3px;
+    /* top: 3px; */
 }
 
 .log-panel-control-input {
@@ -78,10 +85,18 @@ html, body {
     border-color: #073642;
     border-style: none;
     color: #839496;
+    margin-left: 4px;
+    margin-right: 4px;
 }
 
 .log-panel-control-widget {
     display: -webkit-inline-box;
+    margin-left: 8px;
+    margin-right: 8px;
+}
+
+.log-panel-control-replay-last {
+    float: right;
 }
 
 a {
@@ -108,7 +123,9 @@ a {
     margin-right: 4px;
 }
 
-
+.filter-line {
+    border-color: #839496;
+}
 
 ::-webkit-scrollbar {
     background: #073642;

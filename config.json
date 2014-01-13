@@ -1,0 +1,13 @@
+{
+  "databases":
+  [
+    {
+      "host": "localhost"
+      "defaults": true
+    },
+    {
+      "host": "ec2-174-129-51-152.compute-1.amazonaws.com"
+      "name": "dev cluster"
+    }
+  ]
+}

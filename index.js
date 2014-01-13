@@ -1,56 +1,68 @@
-/*global LogPanel LogControl require */
+/*global LogPanel LogControl require CmdBar */
+
+(function () {
 var multilevel = require('multilevel')
   , reconnect = require('reconnect')
-  , LiveStream = require('level-live-stream')
+  , config = require("./config.json")
   , manifest = require("./manifest.json")
   , db = multilevel.client(manifest)
-
-reconnect( function (stream) {
-    var dbstream = db.createRpcStream()
-    stream.pipe(dbstream).pipe(stream)
-
-    dbstream.on("error", function () {
-        stream.destroy()
-    })
-
-    stream.on("error", function () {
-        dbstream.destroy()
-    })
-
-
-}).connect(9999, "ec2-174-129-51-152.compute-1.amazonaws.com")
-
-
-
-var gui = require('nw.gui');
-
-// Get the current window
-var win = gui.Window.get();
-
 
 /*
  * Initialize Command Bar
  */
-var cmdbar = document.querySelector("#cmd-bar")
-var linkConsole = cmdbar.querySelector(".cmd-bar-console")
-linkConsole.addEventListener("click", function () {
-    if (win.isDevToolsOpen()) win.closeDevTools()
-    else win.showDevTools()
+var cmdbar = CmdBar(document.querySelector("#cmd-bar"))
+cmdbar.console(true)
+
+
+if ("databases" in config) {
+  config.databases.forEach( function (db) {
+    if (db.host) {
+      cmdbar.addhost(db.host)
+    }
+    if (db.defaults) {
+      cmdbar.gethost(db.host)
+    }
+  })
+}
+
+reconnect( function (stream) {
+
+  var dbstream = db.createRpcStream()
+  stream.pipe(dbstream).pipe(stream)
+
+  dbstream.on("error", function () {
+    stream.destroy()
+  })
+
+  stream.on("error", function () {
+    dbstream.destroy()
+  })
+
+
 })
+.connect(9999, "localhost") //)
+.on("connect", function () {
+  if (LPanels && LPanels.length) {
+    LPanels.forEach( function (logpanel) {
+      logpanel.connect()
+    })
+  }
+})
+
+
 
 /*
  * Initialize LogPanels
  */
 var logpanels = document.querySelectorAll(".log-panel-container")
-  , L1 = LogPanel(logpanels[0], db)
-         .addFilter("service", "SOURCE")
-         .connect()
-  , L2 = LogPanel(logpanels[1], db)
-         .addFilter("service", "WEBSOCKET")
-         .connect()
-  , L3 = LogPanel(logpanels[2], db)
-         .addFilter("service", "^(?!(WEBSOCKET|SOURCE)$).*")
-         .connect()
-  , L4 = LogPanel(logpanels[3], db)
-         .addFilter("service", "false")
-         .connect()
+  ,  LPanels = []
+
+  LPanels.push( LogPanel(logpanels[0], db)
+                .addFilter("service", "SOURCE"))
+  LPanels.push( LogPanel(logpanels[1], db)
+                .addFilter("service", "WEBSOCKET"))
+  LPanels.push( LogPanel(logpanels[2], db)
+                .addFilter("service", "RESTFUL"))
+  LPanels.push( LogPanel(logpanels[3], db)
+                .addFilter("service", "false"))
+})()
