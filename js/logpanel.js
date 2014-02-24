@@ -226,7 +226,7 @@ function LogPanel (root, db, opts) {
        */
 
 
-    var log = loghtml.cloneNode()
+    var log = loghtml.cloneNode(true)
       , ename = log.querySelector(".log-pm2name + span")
       , eid = log.querySelector(".log-pm_id + span")
       , eservice = log.querySelector(".log-service + span")
@@ -323,7 +323,7 @@ function LogPanel (root, db, opts) {
 
   function addFilter (key, value) {
 
-    var filterElem = filterBox.cloneNode()
+    var filterElem = filterBox.cloneNode(true)
     var activeFilters = filterpop.querySelector(".active-filter-box")
     var filter = {}
     filter[key] = value

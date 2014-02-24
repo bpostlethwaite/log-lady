@@ -2,11 +2,11 @@
   "databases":
   [
     {
-      "host": "localhost"
-      "defaults": true
+      "host": "localhost",
+      "defaults": false
     },
     {
-      "host": "ec2-174-129-51-152.compute-1.amazonaws.com"
+      "host": "ec2-174-129-51-152.compute-1.amazonaws.com",
       "name": "dev cluster"
     }
   ]

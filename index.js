@@ -3,7 +3,7 @@
 (function () {
 var multilevel = require('multilevel')
   , reconnect = require('reconnect')
-  , config = require("./config.json")
+   // , config = require("./config.json")
   , manifest = require("./manifest.json")
   , db = multilevel.client(manifest)
 
@@ -14,16 +14,6 @@ var cmdbar = CmdBar(document.querySelector("#cmd-bar"))
 cmdbar.console(true)
 
 
-if ("databases" in config) {
-  config.databases.forEach( function (db) {
-    if (db.host) {
-      cmdbar.addhost(db.host)
-    }
-    if (db.defaults) {
-      cmdbar.gethost(db.host)
-    }
-  })
-}
 
 reconnect( function (stream) {
 
@@ -40,7 +30,7 @@ reconnect( function (stream) {
 
 
 })
-.connect(9999, "localhost") //)
+.connect(9999, "ec2-174-129-51-152.compute-1.amazonaws.com") //)
 .on("connect", function () {
   if (LPanels && LPanels.length) {
     LPanels.forEach( function (logpanel) {
@@ -57,12 +47,12 @@ reconnect( function (stream) {
 var logpanels = document.querySelectorAll(".log-panel-container")
   ,  LPanels = []
 
-  LPanels.push( LogPanel(logpanels[0], db)
+    LPanels.push( LogPanel(logpanels[0], db)
                 .addFilter("service", "SOURCE"))
-  LPanels.push( LogPanel(logpanels[1], db)
-                .addFilter("service", "WEBSOCKET"))
-  LPanels.push( LogPanel(logpanels[2], db)
-                .addFilter("service", "RESTFUL"))
-  LPanels.push( LogPanel(logpanels[3], db)
-                .addFilter("service", "false"))
+    LPanels.push( LogPanel(logpanels[1], db))
+  //               .addFilter("service", "WEBSOCKET"))
+    LPanels.push( LogPanel(logpanels[2], db))
+  //               .addFilter("service", "RESTFUL"))
+    LPanels.push( LogPanel(logpanels[3], db))
+  //               .addFilter("service", "false"))
 })()
