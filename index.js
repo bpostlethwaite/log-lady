@@ -1,11 +1,17 @@
 /*global LogPanel LogControl require CmdBar */
+var gui = require('nw.gui');
 
 (function () {
-var multilevel = require('multilevel')
-  , reconnect = require('reconnect')
-  , config = require("./config.json")
-  , manifest = require("./manifest.json")
-  , db = multilevel.client(manifest)
+  var multilevel = require('multilevel')
+    , reconnect = require('reconnect')
+    , config = require("./config.json")
+    , manifest = require("./manifest.json")
+    , db = multilevel.client(manifest)
+
+
+  var mode = gui.App.argv[0]
+  if (mode !== "dev" && mode !== "prod")
+    throw new Error("manditory argument dev | prod not supplied")
 
 /*
  * Initialize Command Bar
@@ -30,7 +36,7 @@ reconnect( function (stream) {
 
 
 })
-.connect(9999, config.dbhost)
+.connect(9999, config[mode].dbhost)
 .on("connect", function () {
   if (LPanels && LPanels.length) {
     LPanels.forEach( function (logpanel) {
@@ -54,5 +60,6 @@ var logpanels = document.querySelectorAll(".log-panel-container")
     LPanels.push( LogPanel(logpanels[2], db)
                   .addFilter("service", "RESTFUL"))
     LPanels.push( LogPanel(logpanels[3], db)
-                  .addFilter("service", "false"))
+                  .addFilter("service", "MASTER")
+                  .addFilter("event", "websocketCount"))
 })()
